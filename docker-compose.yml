@@ -1,0 +1,67 @@
+version: '3'
+services:
+  kafka:
+    image: confluentinc/cp-kafka:6.1.1
+    container_name: kafka
+    ports:
+      - '9092:9092'
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:9092'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+    networks:
+      - app-network
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:6.1.1
+    container_name: zookeeper
+    ports:
+      - '2181:2181'
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - app-network
+  mongo:
+    image: 'mongo:latest'
+    container_name: mongo
+    ports:
+      - '27017:27017'
+    volumes:
+      - ./mongo-data:/data/db
+    networks:
+      - app-network
+  order-service:
+    build:
+      context: ./order-service
+      dockerfile: Dockerfile
+    container_name: order-service
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    depends_on:
+      - kafka
+    command: sh -c "sleep 10 && node app.js"  # Delay startup by 10 seconds
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: 'kafka:9092'  # Add this line
+    networks:
+      - app-network
+  product-service:
+    build:
+      context: ./product-service
+      dockerfile: Dockerfile
+    container_name: product-service
+    restart: unless-stopped
+    ports:
+      - '3001:3001'
+    depends_on:
+      - kafka
+    #   - mongo
+    # command: sh -c "sleep 15 && node app.js"  # Delay startup by 15 seconds
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: 'kafka:9092'  # Add this line
+    networks:
+      - app-network
+networks:
+  app-network:
