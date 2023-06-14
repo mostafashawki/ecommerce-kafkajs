@@ -11,9 +11,9 @@ To run the app, follow these steps:
 3. Open a terminal and navigate to the project's root directory.
 4. Run the following command to start the app and its dependencies:
 
-\`\`\`bash
+```bash
 docker-compose up
-\`\`\`
+```
 
 This command will spin up the main two services, order-service, and product-service, along with the required dependencies (Kafka, ZooKeeper, MongoDB).
 
@@ -26,13 +26,13 @@ To create an order, send a POST request to the order-service API:
 URL: http://localhost:3000/orders
 
 Request Body (JSON):
-\`\`\`json
+```json
 {
   "orderId": "1",
   "productId": "1",
   "quantity": "1"
 }
-\`\`\`
+```
 
 This will create a new event in Kafka, indicating the details of the order.
 
@@ -40,7 +40,7 @@ This will create a new event in Kafka, indicating the details of the order.
 
 When the app is running, the product-service will monitor the MongoDB database for changes. Initially, the \`products\` collection in the MongoDB database will have a record like this:
 
-\`\`\`json
+```json
 {
   "_id": {
     "$oid": "647f9230793eafd61be5e6ad"
@@ -49,11 +49,11 @@ When the app is running, the product-service will monitor the MongoDB database f
   "productId": "1",
   "quantity": 10
 }
-\`\`\`
+```
 
 Whenever a new order is created, the product-service will consume the event from Kafka and automatically decrease the stock of the corresponding product. For example, after consuming the order event, the product's quantity will be updated to:
 
-\`\`\`json
+```json
 {
   "_id": {
     "$oid": "647f9230793eafd61be5e6ad"
@@ -62,7 +62,7 @@ Whenever a new order is created, the product-service will consume the event from
   "productId": "1",
   "quantity": 9
 }
-\`\`\`
+```
 
 This ensures that the product stock is accurately maintained based on the orders received.
 
